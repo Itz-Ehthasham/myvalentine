@@ -1,9 +1,11 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import { useState, useEffect } from 'react'
 import { Heart, Sparkles, Star } from 'lucide-react'
+import usePrefersReducedMotion from '../hooks/usePrefersReducedMotion'
 
 const Confetti = ({ show }: { show: boolean }) => {
   const [windowSize, setWindowSize] = useState({ width: 0, height: 0 })
+  const prefersReduced = usePrefersReducedMotion()
 
   useEffect(() => {
     const updateSize = () => {
@@ -15,7 +17,7 @@ const Confetti = ({ show }: { show: boolean }) => {
     return () => window.removeEventListener('resize', updateSize)
   }, [])
 
-  if (!show) return null
+  if (!show || prefersReduced) return null
 
   return (
     <div className="fixed inset-0 pointer-events-none z-50">
@@ -171,7 +173,9 @@ const ProposalSection = () => {
               >
                 <motion.button
                   onClick={handleYes}
-                  className="group relative px-8 sm:px-12 py-4 sm:py-6 bg-gradient-to-r from-valentine-500 to-valentine-600 text-white font-bold text-xl sm:text-2xl rounded-full shadow-2xl w-full sm:w-auto"
+                  type="button"
+                  aria-label="Answer yes to the proposal"
+                  className="group relative focus-ring px-8 sm:px-12 py-4 sm:py-6 bg-gradient-to-r from-valentine-500 to-valentine-600 text-white font-bold text-xl sm:text-2xl rounded-full shadow-2xl w-full sm:w-auto"
                   initial={{ opacity: 0, x: -50, rotateY: -90 }}
                   animate={{ opacity: 1, x: 0, rotateY: 0 }}
                   transition={{ duration: 0.8, delay: 4.2, type: "spring" }}
@@ -216,7 +220,9 @@ const ProposalSection = () => {
 
                 <motion.button
                   onClick={handleYes}
-                  className="group relative px-6 sm:px-12 py-4 sm:py-6 bg-gradient-to-r from-rose-400 to-pink-500 text-white font-bold text-lg sm:text-2xl rounded-full shadow-2xl w-full sm:w-auto"
+                  type="button"
+                  aria-label="Answer no to the proposal"
+                  className="group relative focus-ring px-6 sm:px-12 py-4 sm:py-6 bg-gradient-to-r from-rose-400 to-pink-500 text-white font-bold text-lg sm:text-2xl rounded-full shadow-2xl w-full sm:w-auto"
                   initial={{ opacity: 0, x: 50, rotateY: 90 }}
                   animate={{ opacity: 1, x: 0, rotateY: 0 }}
                   transition={{ duration: 0.8, delay: 4.4, type: "spring" }}

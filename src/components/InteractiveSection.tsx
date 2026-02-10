@@ -1,10 +1,11 @@
 import { motion, useMotionValue, useSpring } from 'framer-motion'
 import { useEffect, useState } from 'react'
 import { Heart, Sparkles } from 'lucide-react'
+import usePrefersReducedMotion from '../hooks/usePrefersReducedMotion'
 
 const InteractiveSection = () => {
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
   const [isHovering, setIsHovering] = useState(false)
+  const prefersReduced = usePrefersReducedMotion()
   
   const mouseX = useMotionValue(0)
   const mouseY = useMotionValue(0)
@@ -13,6 +14,7 @@ const InteractiveSection = () => {
   const springY = useSpring(mouseY, { stiffness: 300, damping: 30 })
 
   useEffect(() => {
+    if (prefersReduced) return
     const handleMouseMove = (e: MouseEvent) => {
       setMousePosition({ x: e.clientX, y: e.clientY })
       mouseX.set(e.clientX)
@@ -21,11 +23,12 @@ const InteractiveSection = () => {
 
     window.addEventListener('mousemove', handleMouseMove)
     return () => window.removeEventListener('mousemove', handleMouseMove)
-  }, [mouseX, mouseY])
+  }, [mouseX, mouseY, prefersReduced])
 
   return (
     <section className="relative py-16 sm:py-20 px-4 min-h-screen bg-gradient-to-b from-valentine-100 to-valentine-200">
-      {/* Cursor Follower */}
+      {/* Cursor Follower (disabled for accessibility) */}
+      {!prefersReduced && (
       <motion.div
         className="fixed pointer-events-none z-50"
         style={{
@@ -48,6 +51,7 @@ const InteractiveSection = () => {
           <Heart className="text-valentine-500" size={24} />
         </motion.div>
       </motion.div>
+      )}
 
       <div className="max-w-7xl mx-auto px-4">
         <motion.div

@@ -1,6 +1,7 @@
 import { motion, useScroll, useTransform } from 'framer-motion'
 import { useRef } from 'react'
 import { Heart, Star, Sparkles } from 'lucide-react'
+import usePrefersReducedMotion from '../hooks/usePrefersReducedMotion'
 
 const StoryCard = ({ title, content, icon: Icon, delay = 0 }: any) => {
   return (
@@ -75,13 +76,14 @@ const StoryCard = ({ title, content, icon: Icon, delay = 0 }: any) => {
 
 const StorySection = () => {
   const containerRef = useRef<HTMLDivElement>(null)
+  const prefersReduced = usePrefersReducedMotion()
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ["start end", "end start"]
   })
 
-  const y = useTransform(scrollYProgress, [0, 1], [100, -100])
-  const opacity = useTransform(scrollYProgress, [0, 0.2, 0.8, 1], [0, 1, 1, 0])
+  const y = useTransform(scrollYProgress, prefersReduced ? [0, 0] : [0, 1], prefersReduced ? [0, 0] : [100, -100])
+  const opacity = useTransform(scrollYProgress, prefersReduced ? [0, 1] : [0, 0.2, 0.8, 1], prefersReduced ? [1, 1] : [0, 1, 1, 0])
 
   const stories = [
     {
@@ -192,7 +194,7 @@ const StorySection = () => {
 
       {/* Floating Elements */}
       <div className="absolute inset-0 pointer-events-none">
-        {[...Array(8)].map((_, i) => (
+        {!prefersReduced && [...Array(8)].map((_, i) => (
           <motion.div
             key={i}
             className="absolute"

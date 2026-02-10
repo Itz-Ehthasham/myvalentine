@@ -3,24 +3,39 @@ import { Heart, Sparkles } from 'lucide-react'
 import { Canvas } from '@react-three/fiber'
 import { OrbitControls, Sphere } from '@react-three/drei'
 import { useRef, useEffect, useState } from 'react'
+import usePrefersReducedMotion from '../hooks/usePrefersReducedMotion'
+import { gentle } from '../lib/motion'
 
 const AnimatedHeart = () => {
-  const meshRef = useRef<any>()
+  const meshRef = useRef<any>(null)
+  const prefersReduced = usePrefersReducedMotion()
+
+  // Lightweight Canvas with DPR clamp and reduced-motion fallback
+  if (prefersReduced) {
+    return (
+      <div className="w-full h-full flex items-center justify-center">
+        <svg width="120" height="120" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 21s-8-4.35-8-10a5 5 0 0 1 9-3 5 5 0 0 1 9 3c0 5.65-8 10-8 10z" fill="#ec4899" />
+        </svg>
+      </div>
+    )
+  }
 
   return (
-    <Canvas className="w-full h-full">
-      <ambientLight intensity={0.5} />
-      <pointLight position={[10, 10, 10]} />
+    <Canvas className="w-full h-full" dpr={Math.min(window.devicePixelRatio || 1, 1.5)}>
+      <ambientLight intensity={0.6} />
+      <pointLight position={[5, 5, 5]} intensity={0.8} />
       <Sphere ref={meshRef} args={[1, 32, 32]}>
-        <meshStandardMaterial color="#ec4899" transparent opacity={0.8} />
+        <meshStandardMaterial color="#ec4899" metalness={0.2} roughness={0.4} transparent opacity={0.95} />
       </Sphere>
-      <OrbitControls enableZoom={false} autoRotate autoRotateSpeed={2} />
+      <OrbitControls enableZoom={false} autoRotate autoRotateSpeed={0.6} enablePan={false} />
     </Canvas>
   )
 }
 
 const HeroSection = () => {
   const [windowSize, setWindowSize] = useState({ width: 0, height: 0 })
+  const prefersReduced = usePrefersReducedMotion()
 
   useEffect(() => {
     const updateSize = () => {
@@ -70,11 +85,10 @@ const HeroSection = () => {
       {/* Main Content */}
       <div className="relative z-10 text-center px-4">
         {/* 3D Heart */}
-        <motion.div
-          className="w-32 h-32 mx-auto mb-8"
+        <motion.div className="w-32 h-32 mx-auto mb-8"
           initial={{ scale: 0, rotateY: 0 }}
           animate={{ scale: 1, rotateY: 360 }}
-          transition={{ duration: 2, ease: "easeOut" }}
+          transition={{ ...gentle, duration: 1.6 }}
         >
           <AnimatedHeart />
         </motion.div>
@@ -119,7 +133,7 @@ const HeroSection = () => {
                 transition={{ 
                   duration: 0.5, 
                   delay: 1.8 + i * 0.1,
-                  color: { duration: 2, repeat: Infinity }
+                  ...(prefersReduced ? {} : { color: { duration: 2, repeat: Infinity } })
                 }}
               >
                 {letter}
@@ -152,7 +166,9 @@ const HeroSection = () => {
         <motion.div className="flex justify-center">
           <motion.button
             onClick={scrollToNext}
-            className="group relative px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-valentine-500 to-valentine-600 text-white font-semibold rounded-full text-base sm:text-lg shadow-lg hover:shadow-xl transition-all duration-300"
+            type="button"
+            aria-label="Start the journey"
+            className="group relative focus-ring px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-valentine-500 to-valentine-600 text-white font-semibold rounded-full text-base sm:text-lg shadow-lg hover:shadow-xl transition-all duration-300"
             initial={{ opacity: 0, y: 50, scale: 0.8 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{ duration: 1, delay: 3, type: "spring", bounce: 0.5 }}
@@ -161,14 +177,14 @@ const HeroSection = () => {
           >
             <motion.span 
               className="flex items-center gap-2"
-              animate={{ 
+              animate={prefersReduced ? undefined : { 
                 textShadow: [
                   "0 0 0px rgba(255,255,255,0)",
                   "0 0 20px rgba(255,255,255,0.8)",
                   "0 0 0px rgba(255,255,255,0)"
                 ]
               }}
-              transition={{ duration: 2, repeat: Infinity }}
+              transition={prefersReduced ? { duration: 0 } : { duration: 2, repeat: Infinity }}
             >
               {"Start the Journey".split(" ").map((word, i) => (
                 <motion.span
@@ -181,8 +197,8 @@ const HeroSection = () => {
                 </motion.span>
               ))}
               <motion.div
-                animate={{ rotate: 360, scale: [1, 1.2, 1] }}
-                transition={{ duration: 2, repeat: Infinity }}
+                animate={prefersReduced ? {} : { rotate: 360, scale: [1, 1.2, 1] }}
+                transition={prefersReduced ? { duration: 0 } : { duration: 2, repeat: Infinity }}
               >
                 <Sparkles className="animate-sparkle" size={20} />
               </motion.div>
